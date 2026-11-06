@@ -23,6 +23,9 @@ router.get('/:id', async function(req, res, next) {
 
         res.status(200).send({ status: 200, message: 'success', data: product })
     } catch (error) {
+        if (error.name === 'CastError') {
+            return res.status(400).send({ status: 400, message: 'Product not found', data: null })
+        }
         res.status(500).send({ status: 500, message: error.message, data: null })
     }
 })
@@ -63,6 +66,8 @@ router.post('/:id/orders', async function(req, res, next) {
         })
 
         await order.save()
+        product.stock -= quantity
+        await product.save()
         res.status(201).send({ status: 201, message: 'Create Order Success', data: order })
 
     } catch (error) {
