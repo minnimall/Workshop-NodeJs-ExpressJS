@@ -7,9 +7,9 @@ var orderSchema = require('../models/order')
 router.get('/', async function(req, res, next) {
     try{
         let products = await productSchema.find({})
-        res.status(200).send({ status: 200, message: 'success', data: products });
+        res.ok('Query product success', products)
     } catch (error) {
-        res.status(500).send({ status: 500, message: error.message, data: null })
+        res.serverError(error.message)
     }
 });
 
@@ -18,48 +18,48 @@ router.get('/:id', async function(req, res, next) {
     try{
         let { id } = req.params
 
-        let product = await productSchema.findById(id)
-        if (!product) return res.status(400).send({ status: 400, message: 'Product not found', data: null })
+        const product = await productSchema.findById(id)
+        if (!product) return res.badRequest('Product not found')
 
-        res.status(200).send({ status: 200, message: 'success', data: product })
+        res.ok('Find 1 product success', product)
     } catch (error) {
         if (error.name === 'CastError') {
-            return res.status(400).send({ status: 400, message: 'Product not found', data: null })
+            return res.badRequest('Product not found')
         }
-        res.status(500).send({ status: 500, message: error.message, data: null })
+        res.serverError(error.message)
     }
 })
 
 // แสดง Order ทั้งหมดของ Product
 router.get('/:id/orders', async function(req, res, next) {
     try{
-        let { id } = req.params
+        const { id } = req.params
 
-        let orders = await orderSchema.find({ product: id })
+        const orders = await orderSchema.find({ product: id })
             .populate('user', 'username name tel')
             .populate('product', 'name price')
 
-        res.status(200).send({ status: 200, message: 'success', data: orders })
+        res.ok('Query order all in product success', orders)
     } catch (error) {
-        res.status(500).send({ status: 500, message: error.message, data: null })
+        res.serverError(error.message)
     }
 })
 
 // เพิ่ม Order ใน Product
 router.post('/:id/orders', async function(req, res, next) {
     try{
-        let { id } = req.params
-        let { quantity } = req.body
+        const { id } = req.params
+        const { quantity } = req.body
 
-        let product = await productSchema.findById(id)
+        const product = await productSchema.findById(id)
 
-        if (!product) return res.status(400).send({ status: 400, message: 'Product not found', data: null })
+        if (!product) return res.badRequest('Product not found')
         
         if(quantity > product.stock) {
-            return res.status(400).send({ status:400, message: 'Cant create order Not enough Stock', data:null })
+            return res.badRequest('Cant create order Not enough Stock')
         }
 
-        let order = new orderSchema({
+        const order = new orderSchema({
             product: id,
             user: req.auth.id,
             quantity: quantity
@@ -68,32 +68,31 @@ router.post('/:id/orders', async function(req, res, next) {
         await order.save()
         product.stock -= quantity
         await product.save()
-        res.status(201).send({ status: 201, message: 'Create Order Success', data: order })
-
+        res.created('Create order success', order)
     } catch (error) {
-        res.status(500).send({ status: 500, message: error.message, data: null })
+        res.serverError(error.message)
     }
 })
 
 // เพิ่มรายการ products
 router.post('/', async function(req, res, next) {
     try {
-        let { name, price, stock } = req.body
+        const { name, price, stock } = req.body
 
-        let checkName = await productSchema.findOne({ name: name })
-        if (checkName) return res.status(400).send({ status: 400, message: 'Product name already exists', data: null })
+        const checkName = await productSchema.findOne({ name: name })
+        if (checkName) return res.badRequest('Product name already exists')
 
-        let product = new productSchema({
+        const product = new productSchema({
             name: name,
             price: price,
             stock: stock
         })
 
         await product.save()
-        res.status(201).send({ status: 201, message: 'Created Product Success.', data: product })
+        res.created('Created Product Success', product)
 
     } catch (error) {
-        res.status(500).send({ status: 500, message: error.message, data: null })
+        res.serverError(error.message)
     }
 });
 
@@ -101,38 +100,38 @@ router.post('/', async function(req, res, next) {
 router.put('/:id', async function(req, res, next) {
     try {
 
-        let { id } = req.params
-        let { name, price, stock } = req.body
+        const { id } = req.params
+        const { name, price, stock } = req.body
 
-        let checkName = await productSchema.findOne({ name: name, _id: { $ne: id } })
-        if (checkName) return res.status(400).send({ status: 400, message: 'Product name already exists', data: null })
+        const checkName = await productSchema.findOne({ name: name, _id: { $ne: id } })
+        if (checkName) return res.badRequest('Product name already exists')
 
-        let product = await productSchema.findByIdAndUpdate(id,{
+        const product = await productSchema.findByIdAndUpdate(id,{
             name: name,
             price: price,
             stock: stock
         }, { new: true })
 
-        if (!product) return res.status(400).send({ status: 400, message: 'Product not found', data: null })
+        if (!product) return res.badRequest('Product not found')
 
-        res.status(200).send({ status: 200, message: 'Edit Product Success.', data: product })
+        res.ok('Edit Product Success', product)
 
     } catch (error) {
-        res.status(500).send({ status: 500, message: error.message, data: null })
+        res.serverError(error.message)
     }
 });
 
 // ลบข้อมูล
 router.delete('/:id', async function(req, res, next) {
     try{
-        let { id } = req.params
+        const { id } = req.params
 
         let product = await productSchema.findByIdAndDelete(id)
-        if (!product) return res.status(400).send({ status: 400, message: 'Product not found', data: null })
+        if (!product) return res.badRequest('Product not found')
 
-        res.status(200).send({ status: 200, message: 'Delete Product Success.', data: product })
+        res.ok('Delete Product Success', product)
     } catch (error) {
-        res.status(500).send({ status: 500, message: error.message, data: null })
+        res.serverError(error.message)
     }
 });
 

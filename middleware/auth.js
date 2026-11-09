@@ -3,13 +3,13 @@ const jwt = require('jsonwebtoken')
 module.exports = (req, res, next) => {
     try {
         let token = req.headers.authorization
-        if (!token) return res.status(401).send({ status: 401, message: 'invalid token.', data: null })
+        if (!token) return res.unauthorized('invalid token.')
 
         token = token.replace('Bearer ', '')
         req.auth = jwt.verify(token, process.env.JWT_SECRET)
 
         next()
     } catch (error) {
-        res.status(401).send({ status: 401, message: 'invalid token.', data: null })
+        res.unauthorized('invalid token.')
     }
 }

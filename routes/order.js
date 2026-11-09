@@ -5,13 +5,13 @@ var orderSchema = require('../models/order')
 // แสดง Order ทุกรายการ
 router.get('/', async function(req, res, next) {
     try{
-        let orders = await orderSchema.find({})
+        const orders = await orderSchema.find({})
             .populate('product', 'name price')
             .populate('user', 'username name tel')
 
-        res.status(200).send({ status: 200, message: 'success', data: orders });
+        res.ok('Query order success', orders)
     } catch (error) {
-        res.status(500).send({ status: 500, message: error.message, data: null })
+        res.serverError(error.message)
     }
 })
 
