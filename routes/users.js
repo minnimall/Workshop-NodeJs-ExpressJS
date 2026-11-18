@@ -1,9 +1,17 @@
 var express = require('express');
 var router = express.Router();
 var userSchema = require('../models/user')
-const multer = require('multer')
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+
+// ดึงข้อมูลของ user
+router.get('/', async function(req, res, next) {
+  try{
+        let users = await userSchema.find({}).select('-password')
+        res.ok('Query user success', users)
+      } catch (error) {
+    res.serverError(error.message)
+  }
+})
 
 // ปรับแก้ไข approve เป็น true
 router.put('/:id/approve', async function(req, res, next) {

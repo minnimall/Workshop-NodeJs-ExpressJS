@@ -6,6 +6,7 @@ const userSchema = new Schema({
     name: {type: String, required: true},
     tel: { type: String, required: true, unique: true },
     password: {type: String, required: true},
+    role: { type: String, enum: ['user', 'shop', 'admin'], default: 'user'},
     approve: { type: Boolean,
                 default: false,
                 required: true

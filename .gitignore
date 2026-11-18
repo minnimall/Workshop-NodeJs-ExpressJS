@@ -1,6 +1,8 @@
 # dependencies
 node_modules/
 
+uploads/
+
 # secrets / environment
 .env
 .env.*

@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var orderSchema = require('../models/order')
 
-// แสดง Order ทุกรายการ
+// แสดง Order ทุกรายการ ของ admin
 router.get('/', async function(req, res, next) {
     try{
         const orders = await orderSchema.find({})

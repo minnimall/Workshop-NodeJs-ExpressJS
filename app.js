@@ -8,11 +8,14 @@ require('dotenv').config()
 require('./db.js')
 const verifyToken = require('./middleware/auth.js')
 const responeHelper = require('./utils/response.js')
+const role = require('./middleware/role.js')
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var productRouter = require('./routes/product.js');
 var orderRouter = require('./routes/order.js');
+var myOrderRouter = require('./routes/myOrder.js')
+var adminRouter = require('./routes/admin.js');
 
 var app = express();
 app.set('json spaces',2)
@@ -28,12 +31,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+
 app.use(responeHelper)
 
 app.use('/api/v1', indexRouter);
-app.use('/api/v1/users', usersRouter);
-app.use('/api/v1/products', verifyToken, productRouter);
-app.use('/api/v1/orders', verifyToken, orderRouter);
+app.use('/api/v1/users', verifyToken, role('admin'), usersRouter);
+app.use('/api/v1/products', productRouter);
+app.use('/api/v1/orders/mine', verifyToken, myOrderRouter);
+app.use('/api/v1/orders', verifyToken, role('admin'), orderRouter);
+app.use('/api/v1/admin', verifyToken, role('admin'), adminRouter);
 
 
 
